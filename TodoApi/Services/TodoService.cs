@@ -2,8 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TodoApi.Interface;
 using TodoApi.Models;
+using TodoApi.Services;
+
 
 namespace TodoApi.Services
 {
@@ -17,21 +22,19 @@ namespace TodoApi.Services
             _context = context;
         }
 
-        public Task<IEnumerable<TodoItem>> GetItemsListAsync()
+        public async Task<IEnumerable<TodoItem>> GetItemsListAsync()
         {
-            throw new NotImplementedException();
+            return await _context.TodoItems.ToListAsync();
         }
 
-        public Task<TodoItem> GetItemByIdAsync(long id)
+        public async Task<TodoItem> GetItemByIdAsync(long id)
         {
-            throw new NotImplementedException();
-
+           return await _context.TodoItems.FindAsync(id);
         }
 
-        public Task SaveChangesAsync()
+        public async Task SaveChangesAsync()
         {
-            throw new NotImplementedException();
-
+            await _context.SaveChangesAsync();
         }
     }
 }

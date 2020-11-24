@@ -12,6 +12,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Models;
+using TodoApi.Interface;
+using TodoApi.Services;
 
 namespace TodoApi
 {
@@ -29,6 +31,7 @@ namespace TodoApi
         {
             services.AddDbContext<TodoContext>(opt =>
                opt.UseInMemoryDatabase("TodoList"));
+            services.AddScoped<ITodoService, TodoService>();
             services.AddControllers();
 
 

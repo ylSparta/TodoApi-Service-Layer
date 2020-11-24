@@ -5,7 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TodoApi.Interface;
 using TodoApi.Models;
+using TodoApi.Services;
+
 
 namespace TodoApi.Controllers
 {
@@ -14,26 +17,33 @@ namespace TodoApi.Controllers
     public class TodoItemsController : ControllerBase
     {
         private readonly TodoContext _context;
+        private readonly ITodoService _service;
 
-        public TodoItemsController(TodoContext context)
+        public TodoItemsController(TodoContext context, ITodoService service)
         {
             _context = context;
+            _service = service;
         }
 
         // GET: api/TodoItems
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItemDTO>>> GetTodoItems()
         {
-            return await _context.TodoItems
-                .Select(x => ItemToDTO(x))
-                .ToListAsync();
+            var todoList = await _service.GetItemsListAsync();
+            var todoDTOList = new List<TodoItemDTO>();
+            foreach(var item in todoList)
+            {
+                todoDTOList.Add(ItemToDTO(item));
+            }
+
+            return todoDTOList;
         }
 
         // GET: api/TodoItems/5
         [HttpGet("{id}")]
         public async Task<ActionResult<TodoItemDTO>> GetTodoItem(long id)
         {
-            var todoItem = await _context.TodoItems.FindAsync(id);
+            var todoItem = await _service.GetItemByIdAsync(id);
 
             if (todoItem == null)
             {
@@ -47,14 +57,14 @@ namespace TodoApi.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTodoItem(long id, TodoItemDTO todoItemDTO)
+        public async Task<IActionResult> PutTodoItem(long id, TodoItemDTO todoItemDTO)
         {
             if (id != todoItemDTO.Id)
             {
                 return BadRequest();
             }
 
-            var todoItem = await _context.TodoItems.FindAsync(id);
+            var todoItem = await _service.GetItemByIdAsync(id);
             if (todoItem == null)
             {
                 return NotFound();
@@ -65,7 +75,7 @@ namespace TodoApi.Controllers
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _service.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException) when (!TodoItemExists(id))
             {
